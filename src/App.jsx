@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
-const API_URL = 'https://api.leonmartin.cc/robe'
+const API_URL = 'https://api-robe.leonmartin.cc/robe'
 
 function App() {
   const [messages, setMessages] = useState([])
