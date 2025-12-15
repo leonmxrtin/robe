@@ -48,7 +48,7 @@ function App() {
 
         if (response.ok) {
           e.target.reset()
-          setNotification('Mensaje enviado. Será visible tras revisión.')
+          setNotification('Mensaje enviado. Será visible en breves.')
           setTimeout(() => setNotification(null), 5000)
         } else {
           setNotification('Error al enviar mensaje. Inténtalo de nuevo.')
