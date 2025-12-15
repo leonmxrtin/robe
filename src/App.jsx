@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
 
 const API_URL = 'https://api-robe.leonmartin.cc/robe'
@@ -9,24 +9,26 @@ function App() {
   const [submitting, setSubmitting] = useState(false)
   const [notification, setNotification] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const messagesPerPage = 10
+  const [pagination, setPagination] = useState(null)
 
-  // Cargar mensajes al iniciar
-  useEffect(() => {
-    fetchMessages()
-  }, [])
-
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/messages`)
+      setLoading(true)
+      const response = await fetch(`${API_URL}/messages?page=${currentPage}`)
       const data = await response.json()
-      setMessages(data)
+      setMessages(data.messages)
+      setPagination(data.pagination)
     } catch (error) {
       console.error('Error al cargar mensajes:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage])
+
+  // Cargar mensajes al iniciar y cuando cambie la página
+  useEffect(() => {
+    fetchMessages()
+  }, [fetchMessages])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -99,9 +101,9 @@ function App() {
             <div className="form-group">
               <textarea
                 name="message"
-                placeholder="Tu mensaje de condolencia..."
+                placeholder="Tu mensaje para Robe..."
                 rows={4}
-                maxLength={500}
+                maxLength={1000}
                 required
                 disabled={submitting}
               />
@@ -113,56 +115,47 @@ function App() {
         </section>
 
         <section className="messages-section">
-          <h3>Mensajes ({messages.length})</h3>
+          <h3>Mensajes ({pagination?.totalMessages || 0})</h3>
           <div className="messages-list">
             {loading ? (
               <p className="no-messages">Cargando mensajes...</p>
             ) : messages.length === 0 ? (
               <p className="no-messages">Aún no hay mensajes. Sé el primero en dejar tu condolencia.</p>
             ) : (
-              (() => {
-                const indexOfLastMessage = currentPage * messagesPerPage
-                const indexOfFirstMessage = indexOfLastMessage - messagesPerPage
-                const currentMessages = messages.slice(indexOfFirstMessage, indexOfLastMessage)
-                const totalPages = Math.ceil(messages.length / messagesPerPage)
-
-                return (
-                  <>
-                    {currentMessages.map((msg) => (
-                      <div key={msg.id} className="message-card">
-                        <div className="message-header">
-                          <strong>{msg.name}</strong>
-                        </div>
-                        <p className="message-text">{msg.message}</p>
-                      </div>
-                    ))}
+              <>
+                {messages.map((msg) => (
+                  <div key={msg.id} className="message-card">
+                    <div className="message-header">
+                      <strong>{msg.name}</strong>
+                    </div>
+                    <p className="message-text">{msg.message}</p>
+                  </div>
+                ))}
+                
+                {pagination && pagination.totalPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      className="pagination-btn"
+                      onClick={() => setCurrentPage(prev => prev - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      ← Anterior
+                    </button>
                     
-                    {totalPages > 1 && (
-                      <div className="pagination">
-                        <button
-                          className="pagination-btn"
-                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                          disabled={currentPage === 1}
-                        >
-                          ← Anterior
-                        </button>
-                        
-                        <div className="pagination-info">
-                          <span>Página {currentPage} de {totalPages}</span>
-                        </div>
-                        
-                        <button
-                          className="pagination-btn"
-                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                          disabled={currentPage === totalPages}
-                        >
-                          Siguiente →
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )
-              })()
+                    <div className="pagination-info">
+                      <span>Página {currentPage} de {pagination.totalPages}</span>
+                    </div>
+                    
+                    <button
+                      className="pagination-btn"
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                      disabled={currentPage === pagination.totalPages}
+                    >
+                      Siguiente →
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
