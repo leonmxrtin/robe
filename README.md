@@ -1,5 +1,7 @@
 # Libro de Condolencias - Robe Iniesta
 
+Todo lo escrito en este documento es culpa de Claude Sonnet 4.5. Si alguien lee esto, no le hagáis mucho caso. Pero para programar, si te lo llevas por buen camino, parece que ayuda y hace una tarea decente.
+
 Una aplicación web de libro de condolencias dedicada a Robe Iniesta, cantante de Extremoduro.
 
 ## Características
